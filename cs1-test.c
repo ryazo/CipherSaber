@@ -7,12 +7,13 @@ int main(void)
 
     h = fopen("cstest1.cs1", "rb");
     if (h) {
-	char data[10000];
-	size_t n = fread(data, 1, 10000, h);
-	if (n) {
+	char data[1000];
+	size_t n = fread(data, 1, 1000, h);
+	if (n > CS_IV_SIZE) {
 	    unsigned char dst[1000];
 	    decrypt(dst, data, n, "asdfg", 5);
-	    printf("dst ==> [%22s]\n", dst);
+	    dst[n - CS_IV_SIZE] = 0;
+	    printf("dst ==> [%s]\n", dst);
 	}
 	fclose(h);
     }

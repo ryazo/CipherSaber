@@ -4,6 +4,8 @@
 #include <limits.h>
 #include <stddef.h>
 
+#define CS_IV_SIZE 10
+
 unsigned char *encrypt(unsigned char *dst,
 		       const unsigned char *msg, size_t len,
 		       const unsigned char *pass, size_t siz);

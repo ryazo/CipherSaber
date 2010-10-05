@@ -100,12 +100,12 @@ void setkey(const unsigned char *pass, size_t siz, const unsigned char *IV)
     klen = siz;
     if (IV == NULL) {
 	/* generate 10 random bytes */
-	for (ndx = siz; ndx < siz + 10; ndx++) {
+	for (ndx = siz; ndx < siz + CS_IV_SIZE; ndx++) {
 	    key[ndx] = rand() & 0xFF;
 	}
     } else {
 	/* use 10 bytes from the IV array */
-	for (ndx = siz; ndx < siz + 10; ndx++) {
+	for (ndx = siz; ndx < siz + CS_IV_SIZE; ndx++) {
 	    key[ndx] = *IV++;
 	}
     }
@@ -162,8 +162,8 @@ unsigned char *decrypt(unsigned char *dst,
 
     setkey(pass, siz, msg);
     setup();
-    msg += 10;
-    len -= 10;
+    msg += CS_IV_SIZE;
+    len -= CS_IV_SIZE;
     while (len--) {
 	*dst++ = crypt(*msg++);
     }
