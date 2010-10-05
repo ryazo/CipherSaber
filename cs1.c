@@ -1,3 +1,5 @@
+#include <limits.h>
+#include <stdlib.h>
 #include "cs1.h"
 
 /* reading and taking notes
@@ -6,6 +8,27 @@
 ** initialization vector is not secret
 ** rand() should be good enough provided it's been properly seeded
 */
+
+unsigned char state[256];
+unsigned char key[256]; /* not necessarily all used */
+unsigned char klen;
+unsigned char i = 0, j = 0;
+
+void setup(void) {
+  size_t ndx;
+  for (ndx = 0; ndx < 256; ndx++) state[ndx] = ndx;
+  for (ndx = 0; ndx < 256; ndx++) {
+    unsigned char tmp;
+    unsigned char n;
+    i = ndx;
+    n = i % klen;
+    j += state[i] + key[n];
+    tmp = state[i];
+    state[i] = state[j];
+    state[j] = tmp;
+  }
+  i = j = 0;
+}
 
 /* text from http://ciphersaber.gurus.org/faq.html
 
@@ -26,7 +49,9 @@ The state array is then subjected to 256 mixing operations using a loop
 that steps i through the values from zero to 255. Each mixing operation
 consists of two steps:
 
- * Add to the variable j the contents of the ith element of the state array and the nth element of the key, where n is equal to i modulo the length of the key.
+ * Add to the variable j the contents of the ith element of the state array
+   and the nth element of the key, where n is equal to i modulo the length
+   of the key.
  * Swap the ith and jth elements of the state array.
 
 After the entire mixing loop is completed, i and j are set to zero.
@@ -52,3 +77,64 @@ CipherSaber key followed by the 10 byte initialization vector (IV).
  * When you are decrypting the file, you read the IV from the first
    10 bytes of the encrypted file.
 */
+
+void setkey(const unsigned char *pass, size_t siz, const unsigned char *IV) {
+  size_t ndx;
+  for (ndx = 0; ndx < siz; ndx++) key[ndx] = *pass++;
+  klen = siz;
+  if (IV == NULL) {
+    /* generate 10 random bytes */
+    for (ndx = siz; ndx < siz + 10; ndx++) key[ndx] = rand() & 0xFF;
+  } else {
+    /* use 10 bytes from the IV array */
+    for (ndx = siz; ndx < siz + 10; ndx++) key[ndx] = *IV++;
+  }
+}
+
+unsigned char crypt(unsigned char ch) {
+  unsigned char tmp;
+  unsigned char n;
+
+  i++;
+#if CHAR_BIT > 8
+  if (i > 255) i = 256 - i;
+#endif
+  j += state[i];
+#if CHAR_BIT > 8
+  if (j > 255) j = 256 - j;
+#endif
+  tmp = state[i];
+  state[i] = state[j];
+  state[j] = tmp;
+  n = state[i] + state[j];
+#if CHAR_BIT > 8
+  if (n > 255) n = 256 - n;
+#endif
+  return state[n] ^ ch;
+}
+
+unsigned char *encrypt(unsigned char *dst,
+                       const unsigned char *msg, size_t len,
+                       const unsigned char *pass, size_t siz) {
+  unsigned char *saveddst = dst;
+  setup();
+  setkey(pass, siz, NULL);
+  while (len--) {
+    *dst++ = crypt(*msg++);
+  }
+  return saveddst;
+}
+
+unsigned char *decrypt(unsigned char *dst,
+                       const unsigned char *msg, size_t len,
+                       const unsigned char *pass, size_t siz) {
+  unsigned char *saveddst = dst;
+  setup();
+  setkey(pass, siz, msg);
+  msg += 10;
+  len -= 10;
+  while (len--) {
+    *dst++ = crypt(*msg++);
+  }
+  return saveddst;
+}
