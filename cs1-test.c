@@ -2,6 +2,16 @@
 #include <stdlib.h>
 #include "cs1.h"
 
+/* command line parameters
+** cs1 e|d filename password
+**     e or d ==> encrypt or decrypt
+**     filename ==> d'oh
+**     password ==> single word, "quoted spaces", 0xDEADBEEF
+**                  for a password that starts with 0x (or 0X)
+**                  put it in quotes: "0xGoodPass"
+**                  Only 0-9 and A-F (any case) are recognized
+**                  in '0x' passwords; a remaining odd character
+**                  is ignored */
 int main(int argc, char **argv)
 {
     FILE *h;
