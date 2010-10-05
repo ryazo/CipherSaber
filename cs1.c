@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include "cs1.h"
 
-/* ARGGGG ... I'm seeing it in GNU style! */
+/* Now it's ok. I swapped the 'clean' and 'smudge' lines
+** in the git configuration file */
 
 /* reading and taking notes
 ** user key is a string
@@ -12,27 +13,31 @@
 */
 
 unsigned char state[256];
-unsigned char key[256];         /* not necessarily all used */
-unsigned char klen;             /* number of used elements of key */
+unsigned char key[256];		/* not necessarily all used */
+unsigned char klen;		/* number of used elements of key */
 unsigned char i = 0, j = 0;
 
-void setup(void) {
+void
+setup (void)
+{
   size_t ndx;
 
-  for (ndx = 0; ndx < 256; ndx++) {
-    state[ndx] = ndx;
-  }
-  for (ndx = 0; ndx < 256; ndx++) {
-    unsigned char tmp;
-    unsigned char n;
+  for (ndx = 0; ndx < 256; ndx++)
+    {
+      state[ndx] = ndx;
+    }
+  for (ndx = 0; ndx < 256; ndx++)
+    {
+      unsigned char tmp;
+      unsigned char n;
 
-    i = ndx;
-    n = i % klen;
-    j += state[i] + key[n];
-    tmp = state[i];
-    state[i] = state[j];
-    state[j] = tmp;
-  }
+      i = ndx;
+      n = i % klen;
+      j += state[i] + key[n];
+      tmp = state[i];
+      state[i] = state[j];
+      state[j] = tmp;
+    }
   i = j = 0;
 }
 
@@ -85,78 +90,96 @@ CipherSaber key followed by the 10 byte initialization vector (IV).
 */
 
 void
-setkey(const unsigned char *pass, size_t siz, const unsigned char *IV) {
+setkey (const unsigned char *pass, size_t siz, const unsigned char *IV)
+{
   size_t ndx;
 
-  for (ndx = 0; ndx < siz; ndx++) {
-    key[ndx] = *pass++;
-  }
+  for (ndx = 0; ndx < siz; ndx++)
+    {
+      key[ndx] = *pass++;
+    }
   klen = siz;
-  if (IV == NULL) {
-    /* generate 10 random bytes */
-    for (ndx = siz; ndx < siz + 10; ndx++) {
-      key[ndx] = rand() & 0xFF;
+  if (IV == NULL)
+    {
+      /* generate 10 random bytes */
+      for (ndx = siz; ndx < siz + 10; ndx++)
+	{
+	  key[ndx] = rand () & 0xFF;
+	}
     }
-  } else {
-    /* use 10 bytes from the IV array */
-    for (ndx = siz; ndx < siz + 10; ndx++) {
-      key[ndx] = *IV++;
+  else
+    {
+      /* use 10 bytes from the IV array */
+      for (ndx = siz; ndx < siz + 10; ndx++)
+	{
+	  key[ndx] = *IV++;
+	}
     }
-  }
 }
 
-unsigned char crypt(unsigned char ch) {
+unsigned char
+crypt (unsigned char ch)
+{
   unsigned char tmp;
   unsigned char n;
 
   i++;
 #if CHAR_BIT > 8
-  if (i > 255) {
-    i = 256 - i;
-  }
+  if (i > 255)
+    {
+      i = 256 - i;
+    }
 #endif
   j += state[i];
 #if CHAR_BIT > 8
-  if (j > 255) {
-    j = 256 - j;
-  }
+  if (j > 255)
+    {
+      j = 256 - j;
+    }
 #endif
   tmp = state[i];
   state[i] = state[j];
   state[j] = tmp;
   n = state[i] + state[j];
 #if CHAR_BIT > 8
-  if (n > 255) {
-    n = 256 - n;
-  }
+  if (n > 255)
+    {
+      n = 256 - n;
+    }
 #endif
   return state[n] ^ ch;
 }
 
-unsigned char *encrypt(unsigned char *dst,
-      const unsigned char *msg, size_t len,
-      const unsigned char *pass, size_t siz) {
+unsigned char *
+encrypt (unsigned char *dst,
+	 const unsigned char *msg, size_t len,
+	 const unsigned char *pass, size_t siz)
+{
   unsigned char *saveddst = dst;
 
-  setup();
-  setkey(pass, siz, NULL);
-  while (len--) {
-    *dst++ = crypt(*msg++);
-  }
+  setup ();
+  setkey (pass, siz, NULL);
+  while (len--)
+    {
+      *dst++ = crypt (*msg++);
+    }
   return saveddst;
 }
 
-unsigned char *decrypt(unsigned char *dst,
-      const unsigned char *msg, size_t len,
-      const unsigned char *pass, size_t siz) {
+unsigned char *
+decrypt (unsigned char *dst,
+	 const unsigned char *msg, size_t len,
+	 const unsigned char *pass, size_t siz)
+{
   unsigned char *saveddst = dst;
 
-  setup();
-  setkey(pass, siz, msg);
+  setup ();
+  setkey (pass, siz, msg);
   msg += 10;
   len -= 10;
-  while (len--) {
-    *dst++ = crypt(*msg++);
-  }
+  while (len--)
+    {
+      *dst++ = crypt (*msg++);
+    }
   return saveddst;
 }
