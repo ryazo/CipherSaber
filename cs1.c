@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include "cs1.h"
 
+/* ARGGGG ... I'm seeing it in GNU style! */
+
 /* reading and taking notes
 ** user key is a string
 ** initialization vector (userkey < 246 bytes (recommended <= 53))
