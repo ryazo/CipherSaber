@@ -11,7 +11,7 @@
 
 unsigned char state[256];
 unsigned char key[256];         /* not necessarily all used */
-unsigned char klen;
+unsigned char klen;             /* number of used elements of key */
 unsigned char i = 0, j = 0;
 
 void setup(void) {
