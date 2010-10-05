@@ -16,6 +16,12 @@ int main(int argc, char **argv)
 {
     FILE *h;
 
+    if (argc != 4) {
+	fprintf(stderr, "syntax: %s e|d filename password\n", *argv);
+	fprintf(stderr, "    try %s --help\n", *argv);
+	exit(EXIT_FAILURE);
+    }
+
     h = fopen("cstest1.cs1", "rb");
     if (h) {
 	unsigned char *data, *tmp;
