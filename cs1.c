@@ -97,7 +97,7 @@ void setkey(const unsigned char *pass, size_t siz, const unsigned char *IV)
     for (ndx = 0; ndx < siz; ndx++) {
 	key[ndx] = *pass++;
     }
-    klen = siz;
+    klen = siz + CS_IV_SIZE;
     if (IV == NULL) {
 	/* generate 10 random bytes */
 	for (ndx = siz; ndx < siz + CS_IV_SIZE; ndx++) {
