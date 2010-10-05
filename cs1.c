@@ -82,8 +82,8 @@ CipherSaber key followed by the 10 byte initialization vector (IV).
    10 bytes of the encrypted file.
 */
 
-void setkey(const unsigned char *pass, size_t siz,
-      const unsigned char *IV) {
+void
+setkey(const unsigned char *pass, size_t siz, const unsigned char *IV) {
   size_t ndx;
 
   for (ndx = 0; ndx < siz; ndx++) {
