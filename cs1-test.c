@@ -12,6 +12,7 @@ int main(void)
 	if (n) {
 	    unsigned char dst[1000];
 	    decrypt(dst, data, n, "asdfg", 5);
+	    printf("dst ==> [%22s]\n", dst);
 	}
 	fclose(h);
     }
