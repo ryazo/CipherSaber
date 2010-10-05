@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "cs1.h"
 
-int main(void)
+int main(int argc, char **argv)
 {
     FILE *h;
 
@@ -10,6 +10,7 @@ int main(void)
     if (h) {
 	unsigned char *data, *tmp;
 	size_t n;
+
 	data = malloc(10000);
 	if (data == NULL) {
 	    fclose(h);
@@ -26,6 +27,7 @@ int main(void)
 	}
 	if (n > CS_IV_SIZE) {
 	    unsigned char *dst;
+
 	    dst = malloc(n - CS_IV_SIZE + 1);
 	    if (dst == NULL) {
 		free(data);
