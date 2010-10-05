@@ -5,6 +5,10 @@
 /* Now it's ok. I swapped the 'clean' and 'smudge' lines
 ** in the git configuration file */
 
+/* style in repository is now GNU style;
+** style on my disk is my style
+** I'm happy! */
+
 /* reading and taking notes
 ** user key is a string
 ** initialization vector (userkey < 246 bytes (recommended <= 53))
