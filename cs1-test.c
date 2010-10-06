@@ -16,7 +16,7 @@ int main(int argc, char **argv)
 {
     FILE *h;
 
-    h = fopen("cstest1.cs1", "rb");
+    h = fopen("cs2test.cs2", "rb");
     if (h) {
 	unsigned char *data, *tmp;
 	size_t n;
@@ -45,7 +45,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, "error: no memory\n");
 		exit(EXIT_FAILURE);
 	    }
-	    decrypt(dst, data, n, "asdfg", 5);
+	    decrypt(dst, 10, data, n, "asdfg", 5);
 	    dst[n - CS_IV_SIZE] = 0;
 	    printf("dst ==> [%s]\n", dst);
 	    free(dst);
