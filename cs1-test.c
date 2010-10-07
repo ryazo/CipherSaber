@@ -1,63 +1,247 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "cs1.h"
 
-/* command line parameters
-** cs1 e|d filename password
-**     e or d ==> encrypt or decrypt
-**     filename ==> d'oh
-**     password ==> single word, "quoted spaces", 0xDEADBEEF
-**                  for a password that starts with 0x (or 0X)
-**                  put it in quotes: "0xGoodPass"
-**                  Only 0-9 and A-F (any case) are recognized
-**                  in '0x' passwords; a remaining odd character
-**                  is ignored */
+static void quit(const char *cmdname, int help, const char *msg)
+{
+    fprintf(stderr, "usage: %s [options] [input [output]]\n", cmdname);
+    if (help) {
+	fprintf(stderr, "  -d  decrypt\n");
+	fprintf(stderr, "  -e  encrypt (default)\n");
+	fprintf(stderr,
+		"  -p  password (default is \"password\" with no quotes)\n");
+	fprintf(stderr, "  -x  hexpass\n");
+	fprintf(stderr,
+		"  -n  rounds (default is 1: CipherSaber 1; 20+ advised)\n");
+	fprintf(stderr, "  -h  help\n");
+	fprintf(stderr, "\n");
+	fprintf(stderr,
+		"%s -d secret.msg secret.txt -p Hello -x2020 -p World -n 42\n",
+		cmdname);
+	fprintf(stderr,
+		"Decrypt `secret.msg` using 42 initialization rounds and password\n");
+	fprintf(stderr,
+		"  \"Hello  World\", putting the result in a file named `secret.txt`.\n");
+	if (msg)
+	    fprintf(stderr, "==> %s <==\n", msg);
+	exit(EXIT_FAILURE);
+    } else {
+	fprintf(stderr, "   try %s -h\n", cmdname);
+	if (msg)
+	    fprintf(stderr, "==> %s <==\n", msg);
+	exit(EXIT_SUCCESS);
+    }
+}
+
+struct Options {
+    int mode;			/* 0: encrypt; 1: decrypt */
+    char key[256];
+    unsigned klen;
+    long rounds;
+    char *ifname;
+    FILE *ifh;
+    char *ofname;
+    FILE *ofh;
+};
+
 int main(int argc, char **argv)
 {
-    FILE *h;
+    int argn = 1;
+    int clfiles = 0;
+    int initkey = 1;
+    struct Options opt = { 0, "password", 8, 1, NULL, NULL, NULL, NULL };
+    opt.ifh = stdin;
+    opt.ofh = stdout;
 
-    if (argc != 4) {
-	fprintf(stderr, "syntax: %s e|d filename password\n", *argv);
-	fprintf(stderr, "    try %s --help\n", *argv);
-	exit(EXIT_FAILURE);
+    if (argc == 1)
+	quit(argv[0], 0, 0);
+    while (argn < argc) {
+	if (argv[argn][0] != '-') {
+	    switch (clfiles) {
+	    default:
+		quit(argv[0], 0, "ONLY TWO FILES CAN BE SPECIFIED");
+		break;
+	    case 0:
+		opt.ifname = argv[argn];
+		break;
+	    case 1:
+		opt.ofname = argv[argn];
+		break;
+	    }
+	    clfiles++;
+	} else {
+	    char *ptr;
+	    char *err = NULL;
+	    switch (argv[argn][1]) {
+	    default:
+		quit(argv[0], 0, "UNRECOGNIZED OPTION");
+		break;
+	    case 'e':
+		opt.mode = 0;
+		break;
+	    case 'd':
+		opt.mode = 1;
+		break;
+	    case 'p':
+		if (initkey) {
+		    opt.klen = 0;
+		    initkey = 0;
+		}
+		if (*(ptr = argv[argn] + 2) == 0)
+		    ptr = argv[++argn];
+		while (*ptr) {
+		    if (opt.klen == 246)
+			quit(argv[0], 0, "PASSWORD TOO LONG");
+		    opt.key[opt.klen++] = *ptr++;
+		}
+		break;
+	    case 'x':
+		if (initkey) {
+		    opt.klen = 0;
+		    initkey = 0;
+		}
+		if (*(ptr = argv[argn] + 2) == 0)
+		    ptr = argv[++argn];
+		while (*ptr && *(ptr + 1)) {
+		    int val = 0;
+		    if (isxdigit(*ptr) && isxdigit(*(ptr + 1))) {
+			switch (*ptr) {
+			default:
+			    val += *ptr - '0';
+			    break;
+			case 'a':
+			case 'A':
+			    val += 10;
+			    break;
+			case 'b':
+			case 'B':
+			    val += 11;
+			    break;
+			case 'c':
+			case 'C':
+			    val += 12;
+			    break;
+			case 'd':
+			case 'D':
+			    val += 13;
+			    break;
+			case 'e':
+			case 'E':
+			    val += 14;
+			    break;
+			case 'f':
+			case 'F':
+			    val += 15;
+			    break;
+			}
+			val *= 16;
+			switch (*(ptr + 1)) {
+			default:
+			    val += *(ptr + 1) - '0';
+			    break;
+			case 'a':
+			case 'A':
+			    val += 10;
+			    break;
+			case 'b':
+			case 'B':
+			    val += 11;
+			    break;
+			case 'c':
+			case 'C':
+			    val += 12;
+			    break;
+			case 'd':
+			case 'D':
+			    val += 13;
+			    break;
+			case 'e':
+			case 'E':
+			    val += 14;
+			    break;
+			case 'f':
+			case 'F':
+			    val += 15;
+			    break;
+			}
+		    } else {
+			quit(argv[0], 0, "INVALID HEX DIGIT");
+		    }
+		    if (opt.klen == 246)
+			quit(argv[0], 0, "PASSWORD TOO LONG");
+		    opt.key[opt.klen++] = val;
+		    ptr += 2;
+		}
+		if (*ptr)
+		    quit(argv[0], 0,
+			 "ODD NUMBER OF HEXADECIMAL PASSWORD VALUES");
+		break;
+	    case 'n':
+		if (*(ptr = argv[argn] + 2) == 0)
+		    ptr = argv[++argn];
+		opt.rounds = strtol(ptr, &err, 10);
+		if ((opt.rounds < 1) || (*err != 0))
+		    quit(argv[0], 0, "INVALID NUMBER OF ROUNDS");
+		break;
+	    case 'h':
+		quit(argv[0], 1, 0);
+		break;
+	    }
+	}
+	argn++;
     }
 
-    h = fopen("cstest1.cs1", "rb");
-    if (h) {
-	unsigned char *data, *tmp;
-	size_t n;
+#if 0
+    printf("DBG: mode is %d (0: encrypt; 1: decrypt)\n", opt.mode);
+    printf("DBG: key is [%s] (len: %u)\n", opt.key, opt.klen);
+    printf("DBG: doing %ld rounds\n", opt.rounds);
+    printf("DBG: input filename %s (or handle %d)\n", opt.ifname,
+	   fileno(opt.ifh));
+    printf("DBG: output filename %s (or handle %d)\n", opt.ofname,
+	   fileno(opt.ofh));
+#endif
 
-	data = malloc(10000);
-	if (data == NULL) {
-	    fclose(h);
-	    fprintf(stderr, "error: no memory\n");
+    if (opt.ifname) {
+	opt.ifh = fopen(opt.ifname, "rb");
+	if (!opt.ifh) {
+	    fprintf(stderr,
+		    "Unable to open input file. Program aborted.\n");
 	    exit(EXIT_FAILURE);
 	}
-	n = fread(data, 1, 10000, h);
-	tmp = realloc(data, n);
-	if (tmp == NULL) {
-	    /* failed to realloc down? Strange! Oh well ...
-	     ** do nothing: data points to correct values */
-	} else {
-	    data = tmp;
-	}
-	if (n > CS_IV_SIZE) {
-	    unsigned char *dst;
-
-	    dst = malloc(n - CS_IV_SIZE + 1);
-	    if (dst == NULL) {
-		free(data);
-		fclose(h);
-		fprintf(stderr, "error: no memory\n");
-		exit(EXIT_FAILURE);
-	    }
-	    decrypt(dst, data, n, "asdfg", 5);
-	    dst[n - CS_IV_SIZE] = 0;
-	    printf("dst ==> [%s]\n", dst);
-	    free(dst);
-	}
-	free(data);
-	fclose(h);
     }
+    if (opt.ofname) {
+	opt.ofh = fopen(opt.ofname, "wb");
+	if (!opt.ofh) {
+	    fprintf(stderr,
+		    "Unable to open output file. Program aborted.\n");
+	    exit(EXIT_FAILURE);
+	}
+    }
+#if 0
+    unsigned char *data, *tmp;
+    size_t n;
+
+    data = malloc(10000);
+    n = fread(data, 1, 10000, hin);
+    data = realloc(data, n);
+    if (n > CS_IV_SIZE) {
+	unsigned char *dst;
+
+	dst = malloc(n - CS_IV_SIZE + 1);
+	decrypt(dst, data, n, "asdfg", 5);
+	dst[n - CS_IV_SIZE] = 0;
+	printf("dst ==> [%s]\n", dst);
+    }
+#endif
+
+    if (opt.ifname) {
+	fclose(opt.ifh);
+    }
+    if (opt.ofname) {
+	fclose(opt.ofh);
+    }
+
     return 0;
 }
