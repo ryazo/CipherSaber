@@ -214,11 +214,14 @@ int main(int argc, char **argv)
     if (opt.ofname) {
 	opt.ofh = fopen(opt.ofname, "wb");
 	if (!opt.ofh) {
+	    fclose(opt.ifh);
 	    fprintf(stderr,
 		    "Unable to open output file. Program aborted.\n");
 	    exit(EXIT_FAILURE);
 	}
     }
+
+    /* work */
 
     if (opt.ifname) {
 	fclose(opt.ifh);
