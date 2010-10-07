@@ -57,141 +57,78 @@ int main(int argc, char **argv)
 
     if (argc == 1)
 	quit(argv[0], 0, 0);
-    while (argn < argc) {
-	if (argv[argn][0] != '-') {
-	    switch (clfiles) {
-	    default:
-		quit(argv[0], 0, "ONLY TWO FILES CAN BE SPECIFIED");
-		break;
-	    case 0:
-		opt.ifname = argv[argn];
-		break;
-	    case 1:
-		opt.ofname = argv[argn];
-		break;
-	    }
-	    clfiles++;
-	} else {
-	    char *ptr;
-	    char *err = NULL;
-	    switch (argv[argn][1]) {
-	    default:
-		quit(argv[0], 0, "UNRECOGNIZED OPTION");
-		break;
-	    case 'e':
-		opt.mode = 0;
-		break;
-	    case 'd':
-		opt.mode = 1;
-		break;
-	    case 'p':
-		if (initkey) {
-		    opt.klen = 0;
-		    initkey = 0;
-		}
-		if (*(ptr = argv[argn] + 2) == 0)
-		    ptr = argv[++argn];
-		while (*ptr) {
-		    if (opt.klen == 246)
-			quit(argv[0], 0, "PASSWORD TOO LONG");
-		    opt.key[opt.klen++] = *ptr++;
-		}
-		break;
-	    case 'x':
-		if (initkey) {
-		    opt.klen = 0;
-		    initkey = 0;
-		}
-		if (*(ptr = argv[argn] + 2) == 0)
-		    ptr = argv[++argn];
-		while (*ptr && *(ptr + 1)) {
-		    int val = 0;
-		    if (isxdigit(*ptr) && isxdigit(*(ptr + 1))) {
-			switch (*ptr) {
-			default:
-			    val += *ptr - '0';
-			    break;
-			case 'a':
-			case 'A':
-			    val += 10;
-			    break;
-			case 'b':
-			case 'B':
-			    val += 11;
-			    break;
-			case 'c':
-			case 'C':
-			    val += 12;
-			    break;
-			case 'd':
-			case 'D':
-			    val += 13;
-			    break;
-			case 'e':
-			case 'E':
-			    val += 14;
-			    break;
-			case 'f':
-			case 'F':
-			    val += 15;
-			    break;
-			}
-			val *= 16;
-			switch (*(ptr + 1)) {
-			default:
-			    val += *(ptr + 1) - '0';
-			    break;
-			case 'a':
-			case 'A':
-			    val += 10;
-			    break;
-			case 'b':
-			case 'B':
-			    val += 11;
-			    break;
-			case 'c':
-			case 'C':
-			    val += 12;
-			    break;
-			case 'd':
-			case 'D':
-			    val += 13;
-			    break;
-			case 'e':
-			case 'E':
-			    val += 14;
-			    break;
-			case 'f':
-			case 'F':
-			    val += 15;
-			    break;
-			}
-		    } else {
-			quit(argv[0], 0, "INVALID HEX DIGIT");
-		    }
-		    if (opt.klen == 246)
-			quit(argv[0], 0, "PASSWORD TOO LONG");
-		    opt.key[opt.klen++] = val;
-		    ptr += 2;
-		}
-		if (*ptr)
-		    quit(argv[0], 0,
-			 "ODD NUMBER OF HEXADECIMAL PASSWORD VALUES");
-		break;
-	    case 'n':
-		if (*(ptr = argv[argn] + 2) == 0)
-		    ptr = argv[++argn];
-		opt.rounds = strtol(ptr, &err, 10);
-		if ((opt.rounds < 1) || (*err != 0))
-		    quit(argv[0], 0, "INVALID NUMBER OF ROUNDS");
-		break;
-	    case 'h':
-		quit(argv[0], 1, 0);
-		break;
-	    }
-	}
-	argn++;
+  /* *INDENT-OFF* */
+  while (argn < argc) {
+    if (argv[argn][0] != '-') {
+      switch (clfiles) {
+        default: quit(argv[0], 0, "ONLY TWO FILES CAN BE SPECIFIED"); break;
+        case 0: opt.ifname = argv[argn]; break;
+        case 1: opt.ofname = argv[argn]; break;
+      }
+      clfiles++;
+    } else {
+      char *ptr;
+      char *err = NULL;
+      switch (argv[argn][1]) {
+        default: quit(argv[0], 0, "UNRECOGNIZED OPTION"); break;
+        case 'e': opt.mode = 0; break;
+        case 'd': opt.mode = 1; break;
+        case 'p': if (initkey) {
+                    opt.klen = 0;
+                    initkey = 0;
+                  }
+                  if (*(ptr = argv[argn] + 2) == 0) ptr = argv[++argn];
+                  while (*ptr) {
+                    if (opt.klen == 246) quit(argv[0], 0, "PASSWORD TOO LONG");
+                    opt.key[opt.klen++] = *ptr++;
+                  }
+                  break;
+        case 'x': if (initkey) {
+                    opt.klen = 0;
+                    initkey = 0;
+                  }
+                  if (*(ptr = argv[argn] + 2) == 0) ptr = argv[++argn];
+                  while (*ptr && *(ptr + 1)) {
+                    int val = 0;
+                    if (isxdigit(*ptr) && isxdigit(*(ptr + 1))) {
+                      switch (*ptr) {
+                        default: val += *ptr - '0'; break;
+                        case 'a': case 'A': val += 10; break;
+                        case 'b': case 'B': val += 11; break;
+                        case 'c': case 'C': val += 12; break;
+                        case 'd': case 'D': val += 13; break;
+                        case 'e': case 'E': val += 14; break;
+                        case 'f': case 'F': val += 15; break;
+                      }
+                      val *= 16;
+                      switch (*(ptr + 1)) {
+                        default: val += *(ptr + 1) - '0'; break;
+                        case 'a': case 'A': val += 10; break;
+                        case 'b': case 'B': val += 11; break;
+                        case 'c': case 'C': val += 12; break;
+                        case 'd': case 'D': val += 13; break;
+                        case 'e': case 'E': val += 14; break;
+                        case 'f': case 'F': val += 15; break;
+                      }
+                    } else {
+                      quit(argv[0], 0, "INVALID HEX DIGIT");
+                    }
+                    if (opt.klen == 246) quit(argv[0], 0, "PASSWORD TOO LONG");
+                    opt.key[opt.klen++] = val;
+                    ptr += 2;
+                  }
+                  if (*ptr) quit(argv[0], 0, "ODD NUMBER OF HEXADECIMAL PASSWORD VALUES");
+                  break;
+        case 'n': if (*(ptr = argv[argn] + 2) == 0) ptr = argv[++argn];
+                  opt.rounds = strtol(ptr, &err, 10);
+                  if ((opt.rounds < 1) || (*err != 0)) quit(argv[0], 0, "INVALID NUMBER OF ROUNDS");
+                  break;
+        case 'h': quit(argv[0], 1, 0); break;
+      }
     }
+    argn++;
+  }
+  /* *INDENT-ON* */
 
 #if 0
     printf("DBG: mode is %d (0: encrypt; 1: decrypt)\n", opt.mode);
@@ -221,7 +158,9 @@ int main(int argc, char **argv)
 	}
     }
 
-    /* work */
+    {				/* work */
+	/* decrypt(dst, src, size, pwd, pwdsize); */
+    }				/* work */
 
     if (opt.ifname) {
 	fclose(opt.ifh);

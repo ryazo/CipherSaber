@@ -14,7 +14,7 @@ unsigned char key[256];		/* not necessarily all used */
 unsigned char klen;		/* number of used elements of key */
 unsigned char i = 0, j = 0;
 
-void setup(size_t N)
+static void setup(size_t N)
 {
     size_t ndx;
 
@@ -85,7 +85,8 @@ CipherSaber key followed by the 10 byte initialization vector (IV).
    10 bytes of the encrypted file.
 */
 
-void setkey(const unsigned char *pass, size_t siz, const unsigned char *IV)
+static void setkey(const unsigned char *pass, size_t siz,
+		   const unsigned char *IV)
 {
     size_t ndx;
 
@@ -106,7 +107,7 @@ void setkey(const unsigned char *pass, size_t siz, const unsigned char *IV)
     }
 }
 
-unsigned char crypt(unsigned char ch)
+static unsigned char crypt(unsigned char ch)
 {
     unsigned char tmp;
     unsigned char n;
