@@ -74,6 +74,7 @@ int main(int argc, char **argv)
 	} else {
 	    char *ptr;
 	    char *err = NULL;
+
 	    switch (argv[argn][1]) {
 	    default:
 		quit(argv[0], 0, "UNRECOGNIZED OPTION");
@@ -106,6 +107,7 @@ int main(int argc, char **argv)
 		    ptr = argv[++argn];
 		while (*ptr && *(ptr + 1)) {
 		    int val = 0;
+
 		    if (isxdigit(*ptr) && isxdigit(*(ptr + 1))) {
 			switch (*ptr) {
 			default:
