@@ -74,7 +74,6 @@ int main(int argc, char **argv)
 	} else {
 	    char *ptr;
 	    char *err = NULL;
-
 	    switch (argv[argn][1]) {
 	    default:
 		quit(argv[0], 0, "UNRECOGNIZED OPTION");
@@ -107,7 +106,6 @@ int main(int argc, char **argv)
 		    ptr = argv[++argn];
 		while (*ptr && *(ptr + 1)) {
 		    int val = 0;
-
 		    if (isxdigit(*ptr) && isxdigit(*(ptr + 1))) {
 			switch (*ptr) {
 			default:
@@ -221,22 +219,6 @@ int main(int argc, char **argv)
 	    exit(EXIT_FAILURE);
 	}
     }
-#if 0
-    unsigned char *data, *tmp;
-    size_t n;
-
-    data = malloc(10000);
-    n = fread(data, 1, 10000, hin);
-    data = realloc(data, n);
-    if (n > CS_IV_SIZE) {
-	unsigned char *dst;
-
-	dst = malloc(n - CS_IV_SIZE + 1);
-	decrypt(dst, data, n, "asdfg", 5);
-	dst[n - CS_IV_SIZE] = 0;
-	printf("dst ==> [%s]\n", dst);
-    }
-#endif
 
     if (opt.ifname) {
 	fclose(opt.ifh);

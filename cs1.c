@@ -21,23 +21,25 @@ unsigned char key[256];		/* not necessarily all used */
 unsigned char klen;		/* number of used elements of key */
 unsigned char i = 0, j = 0;
 
-void setup(void)
+void setup(size_t N)
 {
     size_t ndx;
 
     for (ndx = 0; ndx < 256; ndx++) {
 	state[ndx] = ndx;
     }
-    for (ndx = 0; ndx < 256; ndx++) {
-	unsigned char tmp;
-	unsigned char n;
+    while (N--) {
+	for (ndx = 0; ndx < 256; ndx++) {
+	    unsigned char tmp;
+	    unsigned char n;
 
-	i = ndx;
-	n = i % klen;
-	j += state[i] + key[n];
-	tmp = state[i];
-	state[i] = state[j];
-	state[j] = tmp;
+	    i = ndx;
+	    n = i % klen;
+	    j += state[i] + key[n];
+	    tmp = state[i];
+	    state[i] = state[j];
+	    state[j] = tmp;
+	}
     }
     i = j = 0;
 }
@@ -140,28 +142,28 @@ unsigned char crypt(unsigned char ch)
     return state[n] ^ ch;
 }
 
-unsigned char *encrypt(unsigned char *dst,
+unsigned char *encrypt(unsigned char *dst, size_t N,
 		       const unsigned char *msg, size_t len,
 		       const unsigned char *pass, size_t siz)
 {
     unsigned char *saveddst = dst;
 
     setkey(pass, siz, NULL);
-    setup();
+    setup(N);
     while (len--) {
 	*dst++ = crypt(*msg++);
     }
     return saveddst;
 }
 
-unsigned char *decrypt(unsigned char *dst,
+unsigned char *decrypt(unsigned char *dst, size_t N,
 		       const unsigned char *msg, size_t len,
 		       const unsigned char *pass, size_t siz)
 {
     unsigned char *saveddst = dst;
 
     setkey(pass, siz, msg);
-    setup();
+    setup(N);
     msg += CS_IV_SIZE;
     len -= CS_IV_SIZE;
     while (len--) {
