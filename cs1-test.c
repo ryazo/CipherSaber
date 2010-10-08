@@ -8,8 +8,8 @@ static void quit(const char *cmdname, int help, const char *msg)
 {
     fprintf(stderr, "usage: %s [options] [input [output]]\n", cmdname);
     if (help) {
-	fprintf(stderr, "  -d  decrypt\n");
-	fprintf(stderr, "  -e  encrypt (default)\n");
+	fprintf(stderr, "  -d  decrypt (default)\n");
+	fprintf(stderr, "  -e  encrypt\n");
 	fprintf(stderr,
 		"  -p  password (default is \"password\" with no quotes)\n");
 	fprintf(stderr, "  -x  hexpass\n");
@@ -51,7 +51,7 @@ int main(int argc, char **argv)
     int argn = 1;
     int clfiles = 0;
     int initkey = 1;
-    struct Options opt = { 0, "password", 8, 1, NULL, NULL, NULL, NULL };
+    struct Options opt = { 1, "password", 8, 1, NULL, NULL, NULL, NULL };
     opt.ifh = stdin;
     opt.ofh = stdout;
 
