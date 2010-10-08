@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "cs1.h"
+#include "rc4.h"
 
 static void quit(const char *cmdname, int help, const char *msg) {
   fprintf(stderr, "usage: %s [options] [input [output]]\n", cmdname);
