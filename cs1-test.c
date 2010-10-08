@@ -37,7 +37,7 @@ static void quit(const char *cmdname, int help, const char *msg)
 
 struct Options {
     int mode;			/* 0: encrypt; 1: decrypt */
-    char key[256];
+    unsigned char key[256];
     unsigned klen;
     long rounds;
     char *ifname;
@@ -130,16 +130,6 @@ int main(int argc, char **argv)
   }
   /* *INDENT-ON* */
 
-#if 0
-    printf("DBG: mode is %d (0: encrypt; 1: decrypt)\n", opt.mode);
-    printf("DBG: key is [%s] (len: %u)\n", opt.key, opt.klen);
-    printf("DBG: doing %ld rounds\n", opt.rounds);
-    printf("DBG: input filename %s (or handle %d)\n", opt.ifname,
-	   fileno(opt.ifh));
-    printf("DBG: output filename %s (or handle %d)\n", opt.ofname,
-	   fileno(opt.ofh));
-#endif
-
     if (opt.ifname) {
 	opt.ifh = fopen(opt.ifname, "rb");
 	if (!opt.ifh) {
@@ -157,9 +147,67 @@ int main(int argc, char **argv)
 	    exit(EXIT_FAILURE);
 	}
     }
+#if 0
+    printf("DBG: mode is %d (0: encrypt; 1: decrypt)\n", opt.mode);
+    printf("DBG: key is [%s] (len: %u)\n", opt.key, opt.klen);
+    printf("DBG: doing %ld rounds\n", opt.rounds);
+    printf("DBG: input filename %s (or handle %d)\n", opt.ifname,
+	   fileno(opt.ifh));
+    printf("DBG: output filename %s (or handle %d)\n", opt.ofname,
+	   fileno(opt.ofh));
+#endif
 
     {				/* work */
-	/* decrypt(dst, src, size, pwd, pwdsize); */
+	int ch;
+	size_t originallen = 0;
+	size_t i, len = 0;
+	unsigned char *originalmsg = NULL;
+	unsigned char *workedmsg;
+	unsigned char *tmp;
+
+	/* read opt.ifh into originalmsg */
+	while ((ch = fgetc(opt.ifh)) != EOF) {
+	    if (len == originallen) {
+		originallen = 1 + originallen * 13 / 8;
+		tmp = realloc(originalmsg, originallen);
+		if (!tmp) {
+		    fprintf(stderr, "No memory while reading input\n");
+		    exit(EXIT_FAILURE);
+		}
+		originalmsg = tmp;
+	    }
+	    originalmsg[len++] = ch;
+	}
+	/* allocate storage for result */
+	if (opt.mode == 0) {
+	    workedmsg = malloc(len + 10);
+	} else {
+	    if (len < 10) {
+		fprintf(stderr, "No no! input file is not large enough\n");
+		exit(EXIT_FAILURE);
+	    }
+	    workedmsg = malloc(len - 10);
+	}
+	if (!workedmsg) {
+	    fprintf(stderr, "No memory for output\n");
+	    exit(EXIT_FAILURE);
+	}
+	if (opt.mode == 0) {
+	    encrypt(workedmsg, opt.rounds, originalmsg, len, opt.key,
+		    opt.klen);
+	    len += 10;
+	} else {
+	    decrypt(workedmsg, opt.rounds, originalmsg, len, opt.key,
+		    opt.klen);
+	    len -= 10;
+	}
+	/* write workedmsg into opt.ofh */
+	tmp = workedmsg;
+	for (i = 0; i < len; i++) {
+	    fputc(*tmp++, opt.ofh);
+	}
+	free(workedmsg);
+	free(originalmsg);
     }				/* work */
 
     if (opt.ifname) {
