@@ -141,8 +141,12 @@ unsigned char *encrypt(unsigned char *dst, size_t N,
 		       const unsigned char *pass, size_t siz)
 {
     unsigned char *saveddst = dst;
+    int i;
 
     setkey(pass, siz, NULL);
+    for (i = 0; i < CS_IV_SIZE; i++) {
+	*dst++ = key[siz + i];
+    }
     setup(N);
     while (len--) {
 	*dst++ = crypt(*msg++);
