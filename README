@@ -1,3 +1,3 @@
-Just (re)found out about CipherSaber at http://ciphersaber.gurus.org/
+Looked up ciphersaber implementations on github, this was the only one not in an interpreted language. Forked it.
 
-The program is almost done now.
+To read more about it: https://en.wikipedia.org/wiki/CipherSaber
